@@ -19,7 +19,7 @@ using namespace std;
 using namespace boost;
 
 #if defined(NDEBUG)
-# error "Funcoin cannot be compiled without assertions."
+# error "SNO cannot be compiled without assertions."
 #endif
 
 //
@@ -35,8 +35,8 @@ CTxMemPool mempool;
 unsigned int nTransactionsUpdated = 0;
 
 map<uint256, CBlockIndex*> mapBlockIndex;
-uint256 hashGenesisBlock("0xe7e59fbb31c56d70a65700857a9744abdaa35a0b459efb254eaa42c8faa3f323");
-static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20); // Funcoin: starting difficulty is 1 / 2^12
+uint256 hashGenesisBlock("0x7d3ff7a036b2c29ee18c8f285f5b16cf9e18b39bb5da36a75732e19aee171234");
+static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20); // SNO: starting difficulty is 1 / 2^12
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
 uint256 nBestChainWork = 0;
@@ -68,7 +68,7 @@ map<uint256, set<uint256> > mapOrphanTransactionsByPrev;
 // Constant stuff for coinbase transactions we create:
 CScript COINBASE_FLAGS;
 
-const string strMessageMagic = "Funcoin Signed Message:\n";
+const string strMessageMagic = "SNO Signed Message:\n";
 
 double dHashesPerSec = 0.0;
 int64 nHPSTimerStart = 0;
@@ -362,7 +362,7 @@ unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans)
 
 bool CTxOut::IsDust() const
 {
-    // Funcoin: IsDust() detection disabled, allows any valid dust to be relayed.
+    // SNO: IsDust() detection disabled, allows any valid dust to be relayed.
     // The fees imposed on each dust txo is considered sufficient spam deterrant. 
     return false;
 }
@@ -623,7 +623,7 @@ int64 CTransaction::GetMinFee(unsigned int nBlockSize, bool fAllowFree,
             nMinFee = 0;
     }
 
-    // Funcoin
+    // SNO
     // To limit dust spam, add nBaseFee for each output less than DUST_SOFT_LIMIT
     BOOST_FOREACH(const CTxOut& txout, vout)
         if (txout.nValue < DUST_SOFT_LIMIT)
@@ -1087,16 +1087,16 @@ uint256 static GetOrphanRoot(const CBlockHeader* pblock)
 
 int64 static GetBlockValue(int nHeight, int64 nFees)
 {
-    int64 nSubsidy = 20 * COIN;
+    int64 nSubsidy = 10000 * COIN;
 
     // Subsidy is cut in half every 840000 blocks, which will occur approximately every 4 years
-    nSubsidy >>= (nHeight / 10000); // Funcoin: 840k blocks in ~4 years
+    nSubsidy >>= (nHeight / 840000); // SNO: 840k blocks in ~4 years
 
     return nSubsidy + nFees;
 }
 
-static const int64 nTargetTimespan = 1 * 24 * 60 * 60; // Funcoin: 3.5 days
-static const int64 nTargetSpacing = 5 * 60; // Funcoin: 2.5 minutes
+static const int64 nTargetTimespan = 1 * 24 * 60 * 60; // SNO: 3.5 days
+static const int64 nTargetSpacing = 2.5 * 60; // SNO: 2.5 minutes
 static const int64 nInterval = nTargetTimespan / nTargetSpacing;
 
 //
@@ -1155,7 +1155,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
         return pindexLast->nBits;
     }
 
-    // Funcoin: This fixes an issue where a 51% attack can change difficulty at will.
+    // SNO: This fixes an issue where a 51% attack can change difficulty at will.
     // Go back the full period unless it's the first retarget after genesis. Code courtesy of Art Forz
     int blockstogoback = nInterval-1;
     if ((pindexLast->nHeight+1) != nInterval)
@@ -2102,7 +2102,7 @@ bool CBlock::CheckBlock(CValidationState &state, bool fCheckPOW, bool fCheckMerk
     if (vtx.empty() || vtx.size() > MAX_BLOCK_SIZE || ::GetSerializeSize(*this, SER_NETWORK, PROTOCOL_VERSION) > MAX_BLOCK_SIZE)
         return state.DoS(100, error("CheckBlock() : size limits failed"));
 
-    // Funcoin: Special short-term limits to avoid 10,000 BDB lock limit:
+    // SNO: Special short-term limits to avoid 10,000 BDB lock limit:
     if (GetBlockTime() < 1376568000)  // stop enforcing 15 August 2013 00:00:00
     {
         // Rule is: #unique txids referenced <= 4,500
@@ -2742,11 +2742,11 @@ bool LoadBlockIndex()
 {
     if (fTestNet)
     {
-        pchMessageStart[0] = 0xf1;
-        pchMessageStart[1] = 0xc2;
-        pchMessageStart[2] = 0xb6;
-        pchMessageStart[3] = 0xd2;
-        hashGenesisBlock = uint256("0xe38de54581f17c6fab4b0f147e5318c34de2eb090473f36d1d7f424df1e12e94");
+        pchMessageStart[0] = 0xf3;
+        pchMessageStart[1] = 0xc4;
+        pchMessageStart[2] = 0xb2;
+        pchMessageStart[3] = 0xd6;
+        hashGenesisBlock = uint256("0x7845f069043cc2aa14eb1c6634ec85a286cf7081e5a39e1616f9f277433c5d2d");
     }
 
     //
@@ -2779,26 +2779,26 @@ bool InitBlockIndex() {
         //   vMerkleTree: 97ddfbbae6
 
         // Genesis block
-        const char* pszTimestamp = "Doug Jones defeats Roy Moore in Alabama senate election";
+        const char* pszTimestamp = "SNO becomes the best cryptocurrecy 3/3/18";
         CTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         txNew.vin[0].scriptSig = CScript() << 486604799 << CBigNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
-        txNew.vout[0].nValue = 20 * COIN;
-        txNew.vout[0].scriptPubKey = CScript() << ParseHex("04c51ea81fcb28278f0346c9361703a67401d2819ed3cbcc9f971f941976bdbe48968ef979f09f1e5aafaf33aab9071fea7b99cbcdafb28a7b477f881d899b13af") << OP_CHECKSIG;
+        txNew.vout[0].nValue = 10000 * COIN;
+        txNew.vout[0].scriptPubKey = CScript() << ParseHex("044865f9792e92323d100b7193bbd6919ce4b52c96fc1e8fc7216353b7c585d729985ff3d73ed63d45d03e043a2a91aed2b81022796de96769d0dbf6bcde3f996b") << OP_CHECKSIG;
         CBlock block;
         block.vtx.push_back(txNew);
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1513219446;
+        block.nTime    = 1520177810;
         block.nBits    = 0x1e0ffff0;
-        block.nNonce   = 2085105452;
+        block.nNonce   = 2084603219;
 
         if (fTestNet)
         {
-            block.nTime    = 1513219430;
-            block.nNonce   = 387675336;
+            block.nTime    = 1520177780;
+            block.nNonce   = 385811712;
         }
 
 if (false && block.GetHash() != hashGenesisBlock)
@@ -2809,7 +2809,7 @@ if (false && block.GetHash() != hashGenesisBlock)
             uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
             uint256 thash;
             char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
-
+ 
             loop
             {
 #if defined(USE_SSE2)
@@ -2849,7 +2849,7 @@ if (false && block.GetHash() != hashGenesisBlock)
         printf("%s\n", hash.ToString().c_str());
         printf("%s\n", hashGenesisBlock.ToString().c_str());
         printf("%s\n", block.hashMerkleRoot.ToString().c_str());
-        assert(block.hashMerkleRoot == uint256("0xfbed20fa3943533e70a9bed6a78bbc8ec901aa9231125f7ef91cd32198a182ce"));
+        assert(block.hashMerkleRoot == uint256("0xddfd71c8e44303e6ce5881604bb747d54db9ac3092c43294244b2134f26c0b14"));
         block.print();
         assert(hash == hashGenesisBlock);
 
@@ -3122,7 +3122,7 @@ bool static AlreadyHave(const CInv& inv)
 // The message start string is designed to be unlikely to occur in normal data.
 // The characters are rarely used upper ASCII, not valid as UTF-8, and produce
 // a large 4-byte int at any alignment.
-unsigned char pchMessageStart[4] = { 0xfa, 0xc3, 0xba, 0xd3 }; // Funcoin: increase each by adding 2 to bitcoin's value.
+unsigned char pchMessageStart[4] = { 0xfc, 0xc2, 0xb3, 0xd5 }; // SNO: increase each by adding 2 to bitcoin's value.
 
 
 void static ProcessGetData(CNode* pfrom)
@@ -4172,7 +4172,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// FuncoinMiner
+// SNOMiner
 //
 
 int static FormatHashBlocks(void* pbuffer, unsigned int len)
@@ -4585,7 +4585,7 @@ bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
         return false;
 
     //// debug print
-    printf("FuncoinMiner:\n");
+    printf("SNOMiner:\n");
     printf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", hash.GetHex().c_str(), hashTarget.GetHex().c_str());
     pblock->print();
     printf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue).c_str());
@@ -4594,7 +4594,7 @@ bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
     {
         LOCK(cs_main);
         if (pblock->hashPrevBlock != hashBestChain)
-            return error("FuncoinMiner : generated block is stale");
+            return error("SNOMiner : generated block is stale");
 
         // Remove key from key pool
         reservekey.KeepKey();
@@ -4608,17 +4608,17 @@ bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
         // Process this block the same as if we had received it from another node
         CValidationState state;
         if (!ProcessBlock(state, NULL, pblock))
-            return error("FuncoinMiner : ProcessBlock, block not accepted");
+            return error("SNOMiner : ProcessBlock, block not accepted");
     }
 
     return true;
 }
 
-void static FuncoinMiner(CWallet *pwallet)
+void static SNOMiner(CWallet *pwallet)
 {
-    printf("FuncoinMiner started\n");
+    printf("SNOMiner started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
-    RenameThread("funcoin-miner");
+    RenameThread("SNO-miner");
 
     // Each thread has its own key and counter
     CReserveKey reservekey(pwallet);
@@ -4640,7 +4640,7 @@ void static FuncoinMiner(CWallet *pwallet)
         CBlock *pblock = &pblocktemplate->block;
         IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
 
-        printf("Running FuncoinMiner with %"PRIszu" transactions in block (%u bytes)\n", pblock->vtx.size(),
+        printf("Running SNOMiner with %"PRIszu" transactions in block (%u bytes)\n", pblock->vtx.size(),
                ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
 
         //
@@ -4739,7 +4739,7 @@ void static FuncoinMiner(CWallet *pwallet)
     } }
     catch (boost::thread_interrupted)
     {
-        printf("FuncoinMiner terminated\n");
+        printf("SNOMiner terminated\n");
         throw;
     }
 }
@@ -4764,7 +4764,7 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet)
 
     minerThreads = new boost::thread_group();
     for (int i = 0; i < nThreads; i++)
-        minerThreads->create_thread(boost::bind(&FuncoinMiner, pwallet));
+        minerThreads->create_thread(boost::bind(&SNOMiner, pwallet));
 }
 
 // Amount compression:
